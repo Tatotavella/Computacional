@@ -5,7 +5,7 @@
 void llenar(int *red, int m, int n, float proba);//Llena una red dem por n con unos y ceros con proba proba
 void imprimir(int *red, int m, int n);//Imprime la red en pantalla
 int   hoshen(int *red, int m, int n); //Algoritmo de etiquetado
-int   actualizar(int *red,int *clase,int s1,int frag);//Etiqueta el lugar s con frag en la red. -------------------------->¿Vector clase?
+int   actualizar(int *red,int *clase,int s,int frag);//Etiqueta el lugar s con frag en la red. -------------------------->¿Vector clase?
 void  etiqueta_falsa(int *red,int *clase,int s1,int s2);
 void  corregir_etiqueta(int *red,int *clase,int n);
 
@@ -68,7 +68,7 @@ int hoshen(int *red, int m, int n)
   clase=(int *)malloc(m*n*sizeof(int)); //Tal vez puede ser mas chico
 
   for(k=0;k<m*n;k++){ //Lleno el vector clase desde el 0
-	 *(clase+k)=k;//------------------------------->Lo lleno con su lugar
+	 *(clase+k)=k;//-------------------------------------------------------->Preguntar si lo lleno con frag o con k
   }
   
   // Hago el etiquetado para el primer elemento de la red
@@ -81,14 +81,14 @@ int hoshen(int *red, int m, int n)
   
   // Etiquetado para la primera fila de la red
 
-  for(s=1;s<n;s++) //Lugar en memoria hasta n-1
+  for(s=1;s<n;s++) //------------------------------------------------------------------------->Preguntar si va hasta <=n
     {	
       printf("s: %d\n",*(red+s));
       if (*(red+s)) //Si hay un 1 en el lugar s de la primer fila
          {
            s1=*(red+s-1); //Elemento a la izquierda
 	   printf("s-1: %d\n",s1);
-	   if(s1!=0){
+	   if(s1){
 		printf("frag antes: %d\n",frag);
            	actualizar(red,clase,s,frag); // Actualizo y no cambio el frag
 		printf("frag dsp: %d\n",frag); 
@@ -107,14 +107,9 @@ int hoshen(int *red, int m, int n)
 
   return 0;
 }
-int   actualizar(int *red,int *clase,int s1,int frag){
-	if(s1>0){
-	    //No actualizo frag
-	    *(red)=frag; //Realizo el etiquetado correcto buscando en clase
-	    return frag;
-	}else{
-	    *(red)=frag; //Realizo el etiquetado. Nueva etiqueta falsa?
-	    *(clase)=frag; //En el lugar s guardo que hay etiqueta frag
-	    return frag+1;
-	}	
+int   actualizar(int *red,int *clase,int s,int frag){
+	red[s]=frag; //Realizo el etiquetado
+	//Por ahora no estoy usando el vector clase aca.
+	//Tiene que devolver un int.
+	return frag+1;
 }

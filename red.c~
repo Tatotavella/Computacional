@@ -1,0 +1,153 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+// Programa que llena una red con cierta probabilidad con unos y ceros
+// Argumentos de entrada: filas columnas proba
+
+void llenarRed(int *red, int n_filas, int n_col, float proba);//Necesita saber dónde esta la red que va a modificar
+void llenarRedRandom(int *red, int n_filas, int n_col, float proba);
+float randomFloat(); // Genera un float aleatorio entre 0 y 1
+int   hoshen(int *red, int n_filas, int n_col); //Algoritmo de etiquetado
+int   actualizar(int *red,int *clase,int s,int frag);
+void  etiqueta_falsa(int *red,int *clase,int s1,int s2);
+void  corregir_etiqueta(int *red,int *clase,int n);
+
+int main(int argc, char *argv[]){
+	//Tomo como argumentos de entrada: filas columnas proba
+	int n_filas=atoi(argv[1]);// Con atoi convierto string to int
+	int n_col=atoi(argv[2]);
+	float proba=atof(argv[3]);// Con atof convierto string to float
+	int *red; //Un lugar en memoria donde haya una red de enteros. Un array.
+	red=malloc(sizeof(int)*n_filas*n_col);// En la direccion red tengo alocada memoria para que entre la red
+	printf("Filas: %d, Col: %d, Proba: %.2f \n",n_filas, n_col, proba);
+
+	//Lleno la red
+	llenarRed(red,n_filas,n_col,proba);
+
+    //Imprimo la red en pantalla. Se me complicó como interpretar el vector largo en matriz. No encontré manera mas limpia.
+	int i,j;
+	for(i=1;i<=n_filas;i++){
+		for(j=1;j<=n_col;j++){			
+			printf("%d",red[i*n_col-(n_col-j+1)]);
+		}
+		printf("\n");	
+	}
+
+	//Libero la alocacion dinamica
+	free(red); 
+
+	return 0;
+	
+}
+
+float randomFloat(){ // Genera un float aleatorio entre 0 y 1
+      float r = (float)rand()/(float)RAND_MAX;
+      return r;
+}
+
+void llenarRed(int *red, int n_filas, int n_col, float proba){
+	srand((unsigned int)time(NULL));   // should only be called once. Seed the randomizer.
+	int i;
+	float r;	
+	for(i=0;i<n_filas*n_col;i++){
+		r = randomFloat();
+		if(r<proba){
+			red[i] = 1;
+		}else{
+			red[i] = 0;	
+		}
+	}
+}
+
+void llenarRedRandom(int *red, int n_filas, int n_col, float proba){
+	srand((unsigned int)time(NULL));   // should only be called once. Seed the randomizer.
+//----------------INFO---------------------------------------------------------------------------------------------------------------------
+//	int r = rand() % 10;      // rand() returns a pseudo-random integer between 0 and RAND_MAX. Modulus 10 gives random between 0 and 9 because it takes the remainder
+//-------------------------------
+//Macro: int RAND_MAX
+//The value of this macro is an integer constant representing the largest value the rand function can return. In the GNU C Library, it is 2147483647, which is the largest signed integer representable in 32 bits. In other libraries, it may be as low as 32767.
+//-----------------------------------------------------------------------------------------------------------------------------------------
+	int i,r;	
+	for(i=0;i<n_filas*n_col;i++){
+		r = rand() % 2;
+		red[i] = r;
+	}	
+}
+
+int hoshen(int *red, int n_filas, int n_col)
+{
+  /*
+    Esta funcion implementa en algoritmo de Hoshen-Kopelman.
+    Recibe el puntero que apunta a la red y asigna etiquetas 
+    a cada fragmento de red. 
+  */
+
+  int i,j,k,s1,s2,frag;
+  int *clase;
+
+  frag=0; //Numero de etiqueta actual
+  
+  clase=(int *)malloc(n_filas*n_col*sizeof(int)); //Tal vez puede ser mas chico
+
+  for(k=0;k<n_filas*n_col;k++){
+	 *(clase+k)=k;
+  }
+  
+  // primer elemento de la red
+
+  s1=0;
+  frag=2; //Empiezo las etiquetas en el numero 2
+  if (*red){// Quiere decir si lo que esta en el lugar 0 de red es 1 (es decir TRUE)
+	frag=actualizar(red,clase,s1,frag);
+  }
+  
+  // primera fila de la red
+
+  for(i=1;i<n;i++) 
+    {
+      if (*(red+i)) 
+         {
+           s1=*(red+i-1);  
+           frag=actualizar(red+i,clase,s1,frag);
+         }
+    }
+  
+
+  // el resto de las filas 
+
+  for(i=n;i<n*n;i=i+n)
+    {
+
+      // primer elemento de cada fila
+
+      if (*(red+i)) 
+         {
+           s1=*(red+i-n); 
+           frag=actualizar(red+i,clase,s1,frag);
+         }
+
+      for(j=1;j<n;j++)
+	if (*(red+i+j))
+	  {
+	    s1=*(red+i+j-1); 
+            s2=*(red+i+j-n);
+
+	    if (s1*s2>0)
+	      {
+		etiqueta_falsa(red+i+j,clase,s1,s2);
+	      }
+	    else 
+	      { if (s1!=0) frag=actualizar(red+i+j,clase,s1,frag);
+	        else       frag=actualizar(red+i+j,clase,s2,frag);
+	      }
+	  }
+    }
+
+
+  corregir_etiqueta(red,clase,n);
+
+  free(clase):
+
+  return 0;
+}
