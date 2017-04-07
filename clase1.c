@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include <time.h>
 
 void llenar(int *red, int m, int n, float proba);
@@ -8,6 +9,9 @@ int   hoshen(int *red, int m, int n);
 int   actualizar(int *red,int *clase,int s1,int frag);
 void  etiqueta_falsa(int *red,int *clase,int s1,int s2);
 void  corregir_etiqueta(int *red,int *clase,int m,int n);
+void contador_clases(int *red,int *clase,int m,int n);
+void contador_tamanos(int *contClase,int *tamanos,int m,int n);
+int percola(int *red,int m,int n);
 
 int main(int argc, char *argv[]){
 
@@ -31,6 +35,14 @@ int main(int argc, char *argv[]){
 	hoshen(red,m,n);
 	//printf("---------------------------------------------------------\n");
 	//imprimir(red,m,n);
+	
+	int result;
+	result=percola(red,m,n);
+	if(result>0){
+		printf("La red percoló con el cluster: %d",result);
+	}else{
+		printf("La red noi percoló");
+	}
 	
 	
 	free(red);
@@ -66,7 +78,7 @@ void imprimir(int *red, int m, int n){
 	int i,j;
 	for(i=1;i<=m;i++){
 		for(j=1;j<=n;j++){			
-			printf("%d",red[i*n-(n-j+1)]);
+			printf("%4d",red[i*n-(n-j+1)]);
 		}
 		printf("\n");	
 	}
@@ -84,10 +96,10 @@ int hoshen(int *red, int m, int n){
 
 	frag=0; //Numero de etiqueta actual
 
-	clase=(int *)malloc(m*n*sizeof(int)); //Tal vez puede ser mas chico
+	clase=(int *)malloc(ceil(m*n/2)*sizeof(int)); //Tal vez puede ser mas chico que m*n. Ver siguiente comment
 
-	for(k=0;k<m*n;k++){ //Lleno el vector clase desde el 0
-		*(clase+k)=k;//------------------------------->Lo lleno con su lugar
+	for(k=0;k<ceil(m*n/2);k++){ //Lleno el vector clase desde el 0. Tomo el entero mayor a m*n/2 que es situacion tablero de ajedrez (peor cantidad de clusters).
+		*(clase+k)=0;//------------------------------->Lo lleno con su lugar
 	}
 
 	// Hago el etiquetado para el primer elemento de la red
@@ -137,8 +149,51 @@ int hoshen(int *red, int m, int n){
 	printf("---------------------------------------------------------\n");
 	corregir_etiqueta(red,clase,m,n);
 	imprimir(red,m,n);
+	
+	/*//Imprimo el vector clase
+	printf("Vector clase \n");
+	for(k=0;k<ceil(m*n/2);k++){ 
+		printf("%d, ",clase[k]);
+	}*/
 
+	//Contador de tamaño de clusters
+	int *contClase;
+	contClase=(int *)malloc(ceil(m*n/2)*sizeof(int)); 
+	for(k=0;k<ceil(m*n/2);k++){ //Lo lleno de ceros
+		*(contClase+k)=0;
+	}
+	contador_clases(red,contClase,m,n);
+	//Lo imprimo al contador
+	printf("Contador de clases \n");
+	printf("Etiqueta|Tamaño\n");
+	for(k=0;k<ceil(m*n/2);k++){ 
+		if(contClase[k]>0){
+			printf("%d\t%d\n",clase[k],contClase[k]);
+		}
+		
+	}
+
+	//Contador de tamaños
+	int *tamanos;
+	tamanos=(int *)malloc(m*n*sizeof(int)); 
+	for(k=0;k<m*n;k++){ //Lo lleno de ceros
+		*(tamanos+k)=0;
+	}
+	contador_tamanos(contClase,tamanos,m,n);
+	//Lo imprimo
+	printf("Informacion sobre los Tamaños\n");
+	printf("Tamaño|Cantidad\n");
+	for(k=0;k<m*n;k++){ 
+		if(tamanos[k]>0){
+			printf("%d\t%d\n",k,tamanos[k]);
+		}
+		
+	}
+
+	
 	free(clase);
+	free(contClase);
+	free(tamanos);
 
 	return 0;
 }
@@ -209,10 +264,73 @@ void  corregir_etiqueta(int *red,int *clase,int m,int n){
 				while(clase[s]<0){//Busco la etiqueta correcta de s
 					s=-clase[s];
 				}
-				*(red+i+j)=s;				
+				*(red+i+j)=s;
+				clase[s]=s; //Guardo la correcta final en el vector clase				
 			}
 		}
 	}	
+
+}
+void contador_clases(int *red,int *contClase,int m,int n){
+	/*
+	Funcion para contar el tamaño de los clusters de cada
+	etiqueta. La informacion queda guardada en el vector
+	conClase.
+	*/
+	int s,i,j;
+	for(i=0;i<m*n;i=i+n){
+		for(j=0;j<n;j++){
+			if (*(red+i+j)>0){
+				s=*(red+i+j); //Valor de la etiqueta
+				contClase[s]++; //Sumo 1 al contador del tamaño del cluster con etiqueta s				
+			}
+		}
+	}
+
+}
+void contador_tamanos(int *contClase,int *tamanos,int m,int n){
+	/*
+	Funcion para contar tamaños que aparecen de clusters.
+	La informacion queda guardada en el vector
+	tamanos.
+	*/
+	int s,i,j;
+	for(i=0;i<ceil(m*n/2);i++){
+		if (*(contClase+i)>0){
+			s=*(contClase+i); //Valor del tamaño
+			tamanos[s]++; //Sumo 1 al contador de cantidad de tamaños				
+			}
+		}
+}
+int percola(int *red,int m,int n){
+	/*Devuelve 1 si el sistema percola 
+	y 0 si no.
+	*/
+	int i,j,rta;
+	int etiqArriba[ceil(n/2)];//Como mucho hay n/2 etiquetas en la primer fila
+	j=0
+	for(i=0;i<n;i++){
+		if(red[i]>0){	
+			etiqArriba[j]=red[i];
+			j++;
+		}
+
+	}
+	//Chequeo si aparece alguna etiqArriba en la parte de abajo
+	rta=0;	
+	for(i=0;i<n;i++){
+		if(red[(m-1)*n+i]>0){//Recorro ultima fila
+			for(j=0;j<ceil(n/2);j++){//Comparo con etiqArriba
+				if(etiqArriba[j]==red[(m-1)*n+i]){
+					rta=1;
+					break;
+				}
+			}
+		}
+
+	}
+	return rta;
+	
 
 }
 
