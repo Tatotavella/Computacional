@@ -307,8 +307,8 @@ int percola(int *red,int m,int n){
 	y 0 si no.
 	*/
 	int i,j,rta;
-	int etiqArriba[ceil(n/2)];//Como mucho hay n/2 etiquetas en la primer fila
-	j=0
+	int etiqArriba[(int)ceil(n/2)];//Como mucho hay n/2 etiquetas en la primer fila
+	j=0;
 	for(i=0;i<n;i++){
 		if(red[i]>0){	
 			etiqArriba[j]=red[i];
@@ -322,7 +322,7 @@ int percola(int *red,int m,int n){
 		if(red[(m-1)*n+i]>0){//Recorro ultima fila
 			for(j=0;j<ceil(n/2);j++){//Comparo con etiqArriba
 				if(etiqArriba[j]==red[(m-1)*n+i]){
-					rta=1;
+					rta=etiqArriba[j];
 					break;
 				}
 			}

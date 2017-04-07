@@ -36,6 +36,14 @@ int main(int argc, char *argv[]){
 	//printf("---------------------------------------------------------\n");
 	//imprimir(red,m,n);
 	
+	int result;
+	result=percola(red,m,n);
+	if(result>0){
+		printf("La red percoló con el cluster: %d",result);
+	}else{
+		printf("La red noi percoló");
+	}
+	
 	
 	free(red);
 
@@ -300,7 +308,7 @@ int percola(int *red,int m,int n){
 	*/
 	int i,j,rta;
 	int etiqArriba[ceil(n/2)];//Como mucho hay n/2 etiquetas en la primer fila
-	j=0
+	j=0;
 	for(i=0;i<n;i++){
 		if(red[i]>0){	
 			etiqArriba[j]=red[i];
@@ -314,7 +322,7 @@ int percola(int *red,int m,int n){
 		if(red[(m-1)*n+i]>0){//Recorro ultima fila
 			for(j=0;j<ceil(n/2);j++){//Comparo con etiqArriba
 				if(etiqArriba[j]==red[(m-1)*n+i]){
-					rta=1;
+					rta=etiqArriba[j];
 					break;
 				}
 			}
