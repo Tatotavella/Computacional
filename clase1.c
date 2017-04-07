@@ -39,9 +39,9 @@ int main(int argc, char *argv[]){
 	int result;
 	result=percola(red,m,n);
 	if(result>0){
-		printf("La red percoló con el cluster: %d",result);
+		printf("La red percoló con el cluster: %d\n",result);
 	}else{
-		printf("La red noi percoló");
+		printf("La red no percoló\n");
 	}
 	
 	
