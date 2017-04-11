@@ -12,12 +12,15 @@ void  corregir_etiqueta(int *red,int *clase,int m,int n);
 void contador_clases(int *red,int *clase,int m,int n);
 void contador_tamanos(int *contClase,int *tamanos,int m,int n);
 int percola(int *red,int m,int n);
+float promedio(float *array,int arraysize);
+float dispersion(float *array,int arraysize);
 
 int main(int argc, char *argv[]){
 
 	int m=10;
 	int n=10;
 	float proba=0.5;
+	
 
 	if (argc==4){
 		sscanf(argv[1],"%d",&m);
@@ -28,14 +31,10 @@ int main(int argc, char *argv[]){
 
 	int *red;
 	red=malloc(sizeof(int)*m*n);
-	
-
+	/*	
 	llenar(red,m,n,proba);
-	imprimir(red,m,n);
 	hoshen(red,m,n);
-	//printf("---------------------------------------------------------\n");
-	//imprimir(red,m,n);
-	
+	imprimir(red,m,n);
 	int result;
 	result=percola(red,m,n);
 	if(result>0){
@@ -43,12 +42,74 @@ int main(int argc, char *argv[]){
 	}else{
 		printf("La red no percoló\n");
 	}
+	*/
 	
+	int i,j;
+	int itera=27000;
+	int result;
+	float pcrit;
+	int divisiones=16;
+	float denominador;
 	
+	float *valoresPcrit;
+	valoresPcrit=malloc(sizeof(float)*itera);
+
+	//Barrido fino cerca de pc
+	for(i=0;i<itera;i++){
+		srand(time(NULL)+i);
+		pcrit=0.50;
+		denominador=2.0;
+		for(j=0;j<divisiones;j++){
+			denominador=2.0*denominador;
+			llenar(red,m,n,pcrit);
+			hoshen(red,m,n);
+			result=percola(red,m,n);
+			if(result>0){
+				//printf("%g, %i\n", pcrit, result);
+				pcrit+=(-1.0/denominador);
+			}else{
+				//printf("%g, %i\n", pcrit, result);
+				pcrit+=(1.0/denominador);
+
+			}	
+		}
+		valoresPcrit[i]=pcrit;
+		if(i%1000==0){
+			printf("pcrit: %f,paso:%d\n",pcrit,i);
+		}
+	}
+	
+	pcrit=promedio(valoresPcrit,itera);
+	printf("Valor de pcritica: %f\n",pcrit);
+	free(valoresPcrit);
+	
+
+	//printf("---------------------------------------------------------\n");
+	//imprimir(red,m,n);
+	//result=percola(red,m,n);
+	//if(result>0){
+	//	printf("La red percoló con el cluster: %d\n",result);
+	//}else{
+	//	printf("La red no percoló\n");
+	//}
+
 	free(red);
+	
 
 	return 0;
 	
+}
+float promedio(float *array,int arraysize){
+	int i;
+	float prom=0;
+	for(i=0;i<arraysize;i++){
+		prom=prom+array[i];	
+	}
+	prom=prom/arraysize;
+	return prom;	
+}
+float dispersion(float *array,int arraysize){
+
 }
 void llenar(int *red, int m, int n, float proba){
 
@@ -57,7 +118,7 @@ void llenar(int *red, int m, int n, float proba){
 	y ceros con probabilidad proba
 	*/
 
-	srand((unsigned int)time(NULL));
+	//srand((unsigned int)time(NULL));
 	int i;
 	float r;	
 	for(i=0;i<m*n;i++){
@@ -144,11 +205,11 @@ int hoshen(int *red, int m, int n){
 			}
 		}
 	}
-	printf("---------------------------------------------------------\n");
-	imprimir(red,m,n);
-	printf("---------------------------------------------------------\n");
+	//printf("---------------------------------------------------------\n");
+	//imprimir(red,m,n);
+	//printf("---------------------------------------------------------\n");
 	corregir_etiqueta(red,clase,m,n);
-	imprimir(red,m,n);
+	//imprimir(red,m,n);
 	
 	/*//Imprimo el vector clase
 	printf("Vector clase \n");
@@ -163,6 +224,7 @@ int hoshen(int *red, int m, int n){
 		*(contClase+k)=0;
 	}
 	contador_clases(red,contClase,m,n);
+	/*	
 	//Lo imprimo al contador
 	printf("Contador de clases \n");
 	printf("Etiqueta|Tamaño\n");
@@ -172,7 +234,7 @@ int hoshen(int *red, int m, int n){
 		}
 		
 	}
-
+	*/
 	//Contador de tamaños
 	int *tamanos;
 	tamanos=(int *)malloc(m*n*sizeof(int)); 
@@ -180,6 +242,7 @@ int hoshen(int *red, int m, int n){
 		*(tamanos+k)=0;
 	}
 	contador_tamanos(contClase,tamanos,m,n);
+	/*	
 	//Lo imprimo
 	printf("Informacion sobre los Tamaños\n");
 	printf("Tamaño|Cantidad\n");
@@ -189,7 +252,7 @@ int hoshen(int *red, int m, int n){
 		}
 		
 	}
-
+	*/
 	
 	free(clase);
 	free(contClase);
@@ -241,11 +304,16 @@ void  etiqueta_falsa(int *red,int *clase,int s1,int s2){
 		clase[s2]=-s1; //Nueva etiqueta falsa en s2
 		clase[s1]=s1; // ¿Innecesario?
 		*(red)=s1;
-	}else{
+	}else if(s1>s2){
 		clase[s1]=-s2; //Nueva etiqueta falsa en s1
 		clase[s2]=s2;
 		*(red)=s2;
-	}
+	}else
+		{
+		*(red)=s1;
+		clase[s1]=s1; //Dejo las mismas etiquetas
+		clase[s2]=s2;
+		}
 }
 void  corregir_etiqueta(int *red,int *clase,int m,int n){
 
@@ -265,7 +333,7 @@ void  corregir_etiqueta(int *red,int *clase,int m,int n){
 					s=-clase[s];
 				}
 				*(red+i+j)=s;
-				clase[s]=s; //Guardo la correcta final en el vector clase				
+				//clase[s]=s; //Guardo la correcta final en el vector clase				
 			}
 		}
 	}	
@@ -303,8 +371,8 @@ void contador_tamanos(int *contClase,int *tamanos,int m,int n){
 		}
 }
 int percola(int *red,int m,int n){
-	/*Devuelve 1 si el sistema percola 
-	y 0 si no.
+	/*Devuelve la etiqueta del 
+	cluster que percola.
 	*/
 	int i,j,rta;
 	int etiqArriba[(int)ceil(n/2)];//Como mucho hay n/2 etiquetas en la primer fila
