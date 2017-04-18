@@ -1,12 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-'''
+
 #Pcritica. Calculo de pcritica para distintos tamanos de red. Cada punto tiene 27000 realizaciones y cada realizacion
 #se obtiene con 16 divisiones sucesivas del valor de pcritica.
 redsize=[4,16,32,64,128]
 pcrit=[0.562863,0.587758,0.594091,0.592630,0.592557]
 disp=[0.103579,0.044650,0.027715,0.016976,0.009640]
+'''
 plt.xlabel('Largo de la red')
 plt.ylabel('Probabilidad critica')
 plt.errorbar(redsize,pcrit,yerr=disp,fmt='*')
@@ -57,7 +58,7 @@ plt.plot(probas,t_32,'*')
 plt.plot(probas,t_64,'*')
 plt.plot(probas,t_128,'*')
 plt.show()
-'''
+#'''
 #Detalle fino de la zona cercana al punto critico. En 0.6 +/- 0.05 . 50 puntos
 probasFinas=[]
 for i in range(50):
@@ -306,9 +307,84 @@ plt.xlabel('Log Tamanos de cluster')
 plt.ylabel('Log Ocurrencias')
 plt.plot(log_tam_32,log_ns_32,'o')
 plt.show()
+#'''
+
+
+#Curva P inf. 50 puntos equiespaciados 27000 iteraciones por cada punto de la curva contando la masa	
+#del cluster percolante.
+#Codigo de los vectores: t_LARGORED
+
+#Pantallazo general de la funcion
+probas=[]
+for i in range(50):
+	probas.append(i/50.0)
+
+pInf_4=[0.000000,0.000000,0.000000,0.000046,0.000046,0.000178,0.000370,0.000590,0.001299,
+0.002164,0.003350,0.005178,0.007729,0.011185,0.016125,0.020940,0.027051,0.036356,0.044280,
+0.058690,0.074134,0.087949,0.107440,0.128079,0.151009,0.180639,0.207519,0.236424,0.273472,
+0.309625,0.346900,0.389516,0.427058,0.468002,0.505743,0.548185,0.593813,0.632162,0.672951,
+0.710266,0.745375,0.776979,0.812183,0.840676,0.866852,0.892972,0.915333,0.938674,0.959079,0.980030]
+
+pInf_16=[0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,
+0.000000,0.000000,0.000000,0.000000,0.000000,0.000005,0.000028,0.000036,0.000252,0.000488,0.001146,
+0.002947,0.006045,0.012312,0.024987,0.044463,0.076925,0.120088,0.181652,0.253856,0.335319,0.418185,
+0.494616,0.565348,0.623375,0.670023,0.708279,0.740185,0.767438,0.791792,0.814647,0.836530,0.857992,
+0.878766,0.899285,0.919654,0.939985,0.959961,0.979955]
+
+pInf_32=[0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,
+0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000004,
+0.000020,0.000079,0.000655,0.002156,0.008392,0.023711,0.061862,0.131694,0.234757,0.354883,0.468692,
+0.556464,0.620827,0.663482,0.697059,0.725104,0.750180,0.773553,0.795740,0.817337,0.838427,0.859066,
+0.879480,0.899858,0.919872,0.939961,0.960021,0.979960]
+
+pInf_64=[0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,
+0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,
+0.000000,0.000000,0.000000,0.000015,0.000297,0.002558,0.019534,0.089062,0.241324,0.420052,0.542373,
+0.607526,0.648342,0.679637,0.706433,0.730884,0.753872,0.775860,0.797353,0.818339,0.838940,0.859348,
+0.879669,0.899834,0.919911,0.939957,0.960017,0.979992]
+
+pInf_128=[0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,
+0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,
+0.000000,0.000000,0.000000,0.000000,0.000000,0.000008,0.001819,0.043665,0.263301,0.490513,0.578285,
+0.623137,0.656353,0.684218,0.709408,0.732873,0.755135,0.776746,0.797876,0.818664,0.839192,0.859522,
+0.879737,0.899835,0.919949,0.939966,0.960004,0.979999]
+
+
+
 '''
+plt.xlabel('Probabilidad de llenado')
+plt.ylabel('P infinito')
+plt.plot(probas,pInf_4,'o')
+plt.plot(probas,pInf_16,'o')
+plt.plot(probas,pInf_32,'o')
+plt.plot(probas,pInf_64,'o')
+plt.plot(probas,pInf_128,'o')
+plt.show()
+#'''
 
-
+#Dimension fractal. Calculo de masa del clusterpercolante en pcritica para distintos tamanos de red. Cada punto tiene 27000 realizaciones y cada realizacion
+#se obtiene con la pcritica del punto a).
+redsize=[4,16,32,64,128]
+masasInf=[9.213852,109.244102,405.163635,1441.660034,5288.343262]
+disp=[2.275835,26.826820,95.374405,344.041992,1259.488647]
+#Grafico la densidad
+densidadInf=[]
+dispDensidad=[]
+for i in range(len(masasInf)):
+	densidadInf.append(masasInf[i]/(redsize[i]**2))
+	dispDensidad.append(disp[i]/(redsize[i]**2))#Esta bien propagado el error?
+'''
+plt.xlabel('Largo de la red')
+plt.ylabel('Masa del cluster Inf en pc')
+plt.errorbar(redsize,masasInf,yerr=disp,fmt='*')
+plt.show()
+#'''
+'''
+plt.xlabel('Largo de la red')
+plt.ylabel('Densidad del cluster Inf en pc')
+plt.errorbar(redsize,densidadInf,yerr=dispDensidad,fmt='*')
+plt.show()
+#'''
 
 
 

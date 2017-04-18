@@ -16,6 +16,8 @@ float promedio(float *array,int arraysize);
 float dispersion(float *array,int arraysize);
 float pcritica(int *red,int m, int n,int itera,int divisiones);
 void curvafp(int *red,int m, int n,int itera,int puntos);
+void curvaPinf(int *red,int m,int n,int itera,int puntos);
+float fractDim(int *red,int m, int n,int itera,float prob);
 
 
 int main(int argc, char *argv[]){
@@ -30,7 +32,7 @@ int main(int argc, char *argv[]){
 		sscanf(argv[2],"%d",&n);
 		sscanf(argv[3],"%f",&proba);
 	}
-	printf("Filas: %d, Col: %d, Proba: %.2f \n",m, n, proba);
+	printf("Filas: %d, Col: %d, Proba: %f \n",m, n, proba);
 
 	int *red;
 	red=malloc(sizeof(int)*m*n);
@@ -62,7 +64,26 @@ int main(int argc, char *argv[]){
 	curvafp(red,m,n,itera,puntos);
 //*/
 //--------------------------------------------------------------------------	
+/*
+	//P infinito
+	int itera=27000;
+	int puntos=50;
+	curvaPinf(red,m,n,itera,puntos);
+//*/
+//--------------------------------------------------------------------------	
+//---------------------------------------------------------------------
 
+	//Dimension fractal y Masa del cluster infinito
+	int itera=27000;
+	float masaInf;	
+	//int divisiones=16;	
+	//float probacritica;
+	//probacritica=pcritica(red,m,n,itera,divisiones);
+	masaInf=fractDim(red,m,n,itera,proba);
+//*/
+/*
+
+	//Tamaño de los clusters
 	int i,k;
 	float pcrit_16=0.587758;
 	float pcrit_32=0.594091;
@@ -70,7 +91,7 @@ int main(int argc, char *argv[]){
 	float pcrit_128=0.592557;
 	int itera=27000;
 
-	//Tamaño de los clusters
+	
 
 	int *contClase;
 	int *tamanos;
@@ -462,7 +483,105 @@ void curvafp(int *red,int m, int n,int itera,int puntos){
 	}
 	free(curva);
 }
+void curvaPinf(int *red,int m,int n,int itera,int puntos){
+	/*
+	Funcion que realiza la curva P inf que es  	
+	la masa del cluster percolante sobre m*n en 
+	puntos equiespaciados
+	*/
+	int i,j,k;
+	float probabilidad;
+	float *curva;
+	int *contClase;
+	int result;
+	int masa;
+	float masaParcial;
 
+	curva=malloc(sizeof(float)*puntos);
+	contClase=(int *)malloc(m*n*sizeof(int)); 
+	
+	for(k=0;k<m*n;k++){
+		*(contClase+k)=0;
+	}
+	
+	for(i=0;i<puntos;i++){
+		srand(time(NULL)+i);//Cada punto con una sola tira de numeros aleatorios?
+		masaParcial=0;
+		probabilidad=i/(float)puntos;
+		for(j=0;j<itera;j++){
+			llenar(red,m,n,probabilidad);
+			hoshen(red,m,n);
+			result=percola(red,m,n);
+			if(result>0){
+				contador_clases(red,contClase,m,n);
+				masa=contClase[result];
+				masaParcial=masaParcial+masa;
+				for(k=0;k<m*n;k++){//Vacio las clases
+					*(contClase+k)=0;
+				}
+			}
+		}
+		curva[i]=masaParcial/(float)(m*n*itera);
+		printf("%f,",curva[i]);
+		fflush(stdout);
+	}
+	free(curva);
+	free(contClase);
+}
+float fractDim(int *red,int m, int n,int itera, float prob){
+	/*
+	Funcion que devuelve la masa promedio del cluster 
+	percolante sobre "itera" repeticiones
+	*/
+	int i,j,k;
+	int result;
+	float masaInf;
+	float *masas;
+	int *contClase;
+	int cantPercolaciones=0;
+
+	masas=malloc(sizeof(float)*itera);
+	contClase=(int *)malloc(m*n*sizeof(int)); 
+	
+	for(k=0;k<m*n;k++){
+		*(contClase+k)=0;
+	}
+
+	for(i=0;i<itera;i++){
+		srand(time(NULL)+i);
+		llenar(red,m,n,prob);
+		hoshen(red,m,n);
+		result=percola(red,m,n);
+		if(result>0){
+			contador_clases(red,contClase,m,n);
+			masas[cantPercolaciones]=contClase[result];
+			cantPercolaciones++;
+			
+		}
+		if(i%1000==0){
+			printf("Paso:%d\n",i);
+		}
+		for(k=0;k<m*n;k++){
+			*(contClase+k)=0;
+		}
+	}
+	//Promedio y disp
+	float prom=0;
+	for(j=0;j<cantPercolaciones;j++){
+		prom=prom+masas[j];
+	}
+	masaInf=prom/cantPercolaciones;
+	float disp=0;
+	for(j=0;j<cantPercolaciones;j++){
+		disp=disp+(masas[j]-masaInf)*(masas[j]-masaInf);
+	}
+	disp=sqrt(disp/cantPercolaciones);
+	printf("Masa cluster percolante: %f, Dispersion: %f\n",masaInf,disp);
+	free(masas);
+
+
+	return masaInf;
+}
 
 
 
