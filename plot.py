@@ -110,18 +110,8 @@ plt.show()
 #pcrit_64=0.592630
 #pcrit_128=0.592557
 
-tam_4=[]
-tam_16=[]
-tam_32=[]
-tam_64=[]
-tam_128=[]
-
-ns_4=[]
-ns_16=[]
-ns_32=[]
-ns_64=[]
-ns_128=[]
 data={}
+datalog={}
 script_dir = os.path.dirname(__file__) #<-- Directorio absoluto donde estan los resultados
 
 for i in [4,16,32,64,128]:
@@ -135,18 +125,18 @@ for i in [4,16,32,64,128]:
 	next(f) #Salteo header
 	for line in f:
 		inter = [x for x in line.split('\t\t')]
-		tam_16.append(int(inter[0]))
-		ns_16.append(int(inter[1]))	
-	log_ns_16=[]
-	log_tam_16=[]
-	for i in range(len(ns_16)):
-		log_ns_16.append(np.log(ns_16[i]))
-		log_tam_16.append(np.log(tam_16[i]))
+		data[key][0].append(int(inter[0]))
+		data[key][1].append(int(inter[1]))	
 
+	datalog[key]=[[],[]]
+	for i in range(len(data[key][0])):
+		datalog[key][0].append(np.log(data[key][0][i]))
+		datalog[key][1].append(np.log(data[key][1][i]))
+	plt.plot(datalog[key][0],datalog[key][1],'o')
 
 plt.xlabel('Log Tamanos de cluster')
 plt.ylabel('Log Ocurrencias')
-plt.plot(log_tam_16,log_ns_16,'o')
+
 plt.show()
 
 
