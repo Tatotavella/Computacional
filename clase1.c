@@ -3,6 +3,7 @@
 #include <math.h>
 #include <time.h>
 
+
 void llenar(int *red, int m, int n, float proba);
 void imprimir(int *red, int m, int n);
 int   hoshen(int *red, int m, int n);
@@ -72,7 +73,7 @@ int main(int argc, char *argv[]){
 //*/
 //--------------------------------------------------------------------------	
 //---------------------------------------------------------------------
-
+/*
 	//Dimension fractal y Masa del cluster infinito
 	int itera=27000;
 	float masaInf;	
@@ -81,10 +82,11 @@ int main(int argc, char *argv[]){
 	//probacritica=pcritica(red,m,n,itera,divisiones);
 	masaInf=fractDim(red,m,n,itera,proba);
 //*/
-/*
+
 
 	//Tamaño de los clusters
 	int i,k;
+	float pcrit_4=0.562863;
 	float pcrit_16=0.587758;
 	float pcrit_32=0.594091;
 	float pcrit_64=0.592630;
@@ -106,7 +108,7 @@ int main(int argc, char *argv[]){
 	srand((unsigned int)time(NULL));
     for(i=0;i<itera;i++){
 		if(i%1000==0){printf("%d\n",i);}
-		llenar(red,m,n,pcrit_32);
+		llenar(red,m,n,pcrit_64); //Cambiar pcrit ACA para correr otro tamaño
 		hoshen(red,m,n);
 
 		contador_clases(red,contClase,m,n);      //Cuento tamaño de cada etiqueta
@@ -119,20 +121,17 @@ int main(int argc, char *argv[]){
 
 		
 	}
-	printf("Tamaños\n");
+
+	//Escribo en archivo dos columnas |Tamaños|Cantidades|
+	FILE *fp = fopen("Resultados/ns/tam_64.txt","w");
+	fprintf(fp,"Tamaños\t\tCantidades\n");
 	for(k=0;k<m*n;k++){ 
 		if(tamanos[k]>0){
-			printf("%d,",k);
+			fprintf(fp,"%d\t\t%d\n",k,tamanos[k]);
 		}
-	}
-	printf("\n");
-	printf("Cantidades\n");
-	for(k=0;k<m*n;k++){ 
-		if(tamanos[k]>0){
-			printf("%d,",tamanos[k]);
-		}
-	}
-	printf("\n");
+	}	
+	fclose(fp);
+	
 	free(contClase);
 	free(tamanos);
 //*/
