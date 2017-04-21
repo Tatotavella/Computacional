@@ -65,7 +65,7 @@ int main(int argc, char *argv[]){
 	curvafp(red,m,n,itera,puntos);
 //*/
 //--------------------------------------------------------------------------	
-/*
+
 	//P infinito
 	int itera=27000;
 	int puntos=50;
@@ -83,7 +83,7 @@ int main(int argc, char *argv[]){
 	masaInf=fractDim(red,m,n,itera,proba);
 //*/
 
-
+/*
 	//Tamaño de los clusters
 	int i,k;
 	float pcrit_4=0.562863;
@@ -496,17 +496,22 @@ void curvaPinf(int *red,int m,int n,int itera,int puntos){
 	int masa;
 	float masaParcial;
 
+
 	curva=malloc(sizeof(float)*puntos);
 	contClase=(int *)malloc(m*n*sizeof(int)); 
 	
 	for(k=0;k<m*n;k++){
 		*(contClase+k)=0;
 	}
+
+	FILE *fp = fopen("Resultados/pinf/tam_128.txt","w"); //FALTA CORRER 128
+	fprintf(fp,"Proba\t\tPinf\n");
 	
 	for(i=0;i<puntos;i++){
 		srand(time(NULL)+i);//Cada punto con una sola tira de numeros aleatorios?
 		masaParcial=0;
-		probabilidad=i/(float)puntos;
+		probabilidad=0.45+(0.7-0.45)*(i/(float)puntos); //Detalle fino
+		//probabilidad=i/(float)puntos; Toda la curva
 		for(j=0;j<itera;j++){
 			llenar(red,m,n,probabilidad);
 			hoshen(red,m,n);
@@ -520,10 +525,13 @@ void curvaPinf(int *red,int m,int n,int itera,int puntos){
 				}
 			}
 		}
+		printf("%d\n",i);
 		curva[i]=masaParcial/(float)(m*n*itera);
-		printf("%f,",curva[i]);
+		fprintf(fp,"%f\t\t%f\n",probabilidad,curva[i]);
 		fflush(stdout);
 	}
+	
+	fclose(fp);
 	free(curva);
 	free(contClase);
 }
