@@ -84,7 +84,7 @@ int main(int argc, char *argv[]){
 	masaInf=fractDim(red,m,n,itera,proba);
 //*/
 
-
+/*
 	//Tamaño de los clusters
 	int i,k;
 	float pcrit_4=0.562863;
@@ -126,6 +126,77 @@ int main(int argc, char *argv[]){
 	strcpy(str, "Resultados/efezeta/proba_");
 	char cpi[50];
 	sprintf(cpi,"%.5f",proba);
+	printf("%s\n",cpi);
+	strcat(str, cpi);
+	strcat(str, ".txt");
+
+	//Escribo en archivo dos columnas |Tamaños|Cantidades|
+	FILE *fp = fopen(str,"w");
+	fprintf(fp,"Tamaños\t\tCantidades\n");
+	for(k=0;k<m*n;k++){ 
+		if(tamanos[k]>0){
+			fprintf(fp,"%d\t\t%d\n",k,tamanos[k]);
+		}
+	}	
+	fclose(fp);
+	
+	free(contClase);
+	free(tamanos);
+//*/
+//*/
+
+
+	//Gamma matching
+	int i,k;
+	float pcrit_4=0.562863;
+	float pcrit_16=0.587758;
+	float pcrit_32=0.594091;
+	float pcrit_64=0.592630;
+	float pcrit_128=0.592557;
+	int itera=27000;
+
+	
+
+	int *contClase;
+	int *tamanos;
+	contClase=(int *)malloc(m*n*sizeof(int)); 
+	tamanos=(int *)malloc(m*n*sizeof(int)); 
+	
+	int result;
+
+	for(k=0;k<m*n;k++){
+		*(contClase+k)=0;
+		*(tamanos+k)=0;
+	}
+
+	srand((unsigned int)time(NULL));
+    for(i=0;i<itera;i++){
+		//if(i%1000==0){printf("%d\n",i);}
+		llenar(red,m,n,proba); //Cambiar pcrit ACA para correr otro tamaño
+		hoshen(red,m,n);
+
+		contador_clases(red,contClase,m,n);      //Cuento tamaño de cada etiqueta
+	
+		
+		result=percola(red,m,n); //Veo el cluster percolante y lo saco del recuento
+
+		if(result>0){
+			contClase[result]=0; //Saco el percolante del recuento
+		}		
+
+		contador_tamanos(contClase,tamanos,m,n); //Cuento ocurrencias de tamaños
+
+		for(k=0;k<m*n;k++){
+			*(contClase+k)=0;
+		}
+
+
+		
+	}
+	char str[100];
+	strcpy(str, "Resultados/gammamatch/proba_");
+	char cpi[50];
+	sprintf(cpi,"%.4f",proba);
 	printf("%s\n",cpi);
 	strcat(str, cpi);
 	strcat(str, ".txt");

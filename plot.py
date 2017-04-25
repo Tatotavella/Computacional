@@ -25,20 +25,18 @@ plt.ylabel('Probabilidad critica')
 plt.errorbar(redsize,pcrit,yerr=disp,fmt='*')
 plt.show()
 #'''
-'''
+
 #Con mas valores
 redsize=[4,8,16,24,28,32,40,48,64,80,96,112,128,256]
 pcrit=[0.562863,0.579404,0.587758,0.591330,0.591703,0.593926,0.592752,0.592809,0.592517,0.592630,0.592574,0.592486,0.592557,0.592741]
 disp=[0.103579,0.070450,0.044650,0.034066,0.029225,0.027715,0.023418,0.020701,0.014367,0.016976,0.012398,0.010855,0.009640,0.005410]
 xdata=disp[6:]
 ydata=pcrit[6:]
-
 popt, pcov = curve_fit(lineal, xdata, ydata)
 perr = np.sqrt(np.diag(pcov))
 xfit=np.linspace(0,xdata[0],100)
 yfit=popt[0]*xfit+popt[1]
-print(popt[1])
-print(perr[1])
+print("pc(inf): "+str(popt[1])+" err: "+str(perr[1]))
 plt.plot(xfit,yfit)
 
 plt.xlabel('Dispersion')
@@ -49,6 +47,34 @@ plt.xlabel('Largo de la red')
 plt.ylabel('Probabilidad critica')
 plt.errorbar(redsize,pcrit,yerr=disp,fmt='*')
 plt.show()
+
+
+#Logaritmico
+redsizeLog=[]
+pcritLog=[]
+errs=[]
+for i in range(len(redsize)):
+	redsizeLog.append(np.log(redsize[i]))
+	pcritLog.append(np.log(np.abs(0.592506320354-pcrit[i])))
+	errs.append(disp[i]/np.abs(0.592506320354-pcrit[i]))	
+
+xdata=redsizeLog[3:]
+ydata=pcritLog[3:]
+yerrs=errs[3:]
+popt, pcov = curve_fit(lineal, xdata, ydata,sigma=yerrs)
+perr = np.sqrt(np.diag(pcov))
+xfit=np.linspace(xdata[0],xdata[len(xdata)-1],100)
+yfit=popt[0]*xfit+popt[1]
+print("Pendiente: "+str(popt[0])+" err: "+str(perr[0]))
+print("Ordenada: "+str(popt[1])+" err: "+str(perr[1]))
+plt.plot(xfit,yfit)
+
+plt.errorbar(redsizeLog,pcritLog,yerr=errs,fmt='*')
+#plt.plot(redsizeLog,pcritLog,'o')
+plt.xlabel('log Largo red')
+plt.ylabel('log pcrit(L)-pcrit(inf)')
+plt.show()
+
 #'''
 
 #Funcion F(p). 50 puntos equiespaciados 27000 iteraciones por cada punto de la curva contando veces que percola.
@@ -144,7 +170,7 @@ plt.show()
 #pcrit_32=0.594091
 #pcrit_64=0.592630
 #pcrit_128=0.592557
-'''
+
 data={}
 datalog={}
 script_dir = os.path.dirname(__file__) #<-- Directorio absoluto donde estan los resultados
@@ -267,7 +293,7 @@ plt.show()
 # 64  [0.45, 0.7]
 # 128 [0.45, 0.7]
 # 256 [0.5, 0.7]
-'''
+
 dataPinf={}
 dataPinfLog={}
 script_dir = os.path.dirname(__file__) #<-- Directorio absoluto donde estan los resultados
@@ -287,7 +313,7 @@ for i in [4,16,32,64,128,256]:
 	next(f) #Salteo header
 	for line in f:
 		inter = [x for x in line.split('\t\t')]
-		dataPinf[key][0].append(float(inter[0])- pcrits[n])
+		dataPinf[key][0].append(float(inter[0]) - pcrits[n])
 		dataPinf[key][1].append(float(inter[1]))
 
 
@@ -306,37 +332,44 @@ for i in [4,16,32,64,128,256]:
 	plt.plot(dataPinf[key][0],dataPinf[key][1],'o')
 	plt.subplot(212)
 	plt.plot(dataPinfLog[key][0],dataPinfLog[key][1],'o')
+	n+=1
 
-	n=n+1
 
 f.close()
 
 plt.figure(1)
 plt.subplot(211)
-plt.xlabel('Probabilidad de llenado - Pc')
+plt.xlabel('Probabilidad de llenado - pc')
 plt.ylabel('P infinito')
 plt.subplot(212)
-plt.xlabel('log Probabilidad de llenado - Pc')
+plt.xlabel('log Probabilidad de llenado - pc')
 plt.ylabel('log P infinito')
 plt.show()
-#Detalle fino de Pinf para hacer el ajuste lineal de beta en el grafico logaritmico. Me quedo con log(p)>-0.43
+#Detalle fino de Pinf para hacer el ajuste lineal de beta en el grafico logaritmico.
+
+n=0
 for i in [4,16,32,64,128,256]:
 	key='pInf_'+str(i)
 	xdata=[]
 	ydata=[]
 	for j in range(len(dataPinfLog[key][0])):
-		if dataPinfLog[key][0][j]>-2.8:
+		if dataPinfLog[key][0][j]>-3.6:
 			xdata.append(dataPinfLog[key][0][j])
 			ydata.append(dataPinfLog[key][1][j])
+	#plt.plot(xdata,ydata,'o')
+	#plt.show()
+
+
 	popt, pcov = curve_fit(lineal, xdata, ydata)
 	perr = np.sqrt(np.diag(pcov))
 	print("Tamano: "+str(i)+" Beta: "+str(popt[0])+" err: "+str(perr[0]))
 	xfit=np.linspace(xdata[0],xdata[len(xdata)-1],100)
 	yfit=popt[0]*xfit+popt[1]
-	plt.xlabel('log Probabilidad de llenado')
+	plt.xlabel('log Probabilidad de llenado - pc')
 	plt.ylabel('log P infinito')
 	plt.plot(xdata,ydata,'o')
 	plt.plot(xfit,yfit)
+	n+=1
 
 
 plt.show()
@@ -363,7 +396,7 @@ logDisp=[]
 for i in range(len(redsize)):
 	logDens.append(np.log(densidadInf[i]))
 	logSize.append(np.log(redsize[i]))	
-	logDisp.append(np.log(dispDensidad[i]))
+	logDisp.append(dispDensidad[i]/densidadInf[i])
 '''
 plt.xlabel('Largo de la red')
 plt.ylabel('Masa del cluster Inf en pc')
@@ -376,16 +409,14 @@ plt.ylabel('Densidad del cluster Inf en pc')
 plt.errorbar(redsize,densidadInf,yerr=dispDensidad,fmt='*')
 plt.show()
 #'''
-'''
+
 xdata=logSize
 ydata=logDens
 popt, pcov = curve_fit(lineal, xdata, ydata,sigma=logDisp)
 perr = np.sqrt(np.diag(pcov))
 xfit=np.linspace(xdata[0],xdata[len(xdata)-1],100)
 yfit=popt[0]*xfit+popt[1]
-print(popt[0]+2) # Ya que es D-d
-print(popt)
-print(perr)
+print("Dim fractal: "+str(popt[0]+2)+" err: "+str(perr[0])) # Ya que es D-d
 plt.plot(xfit,yfit)
 
 
@@ -394,6 +425,7 @@ plt.ylabel('log Densidad del cluster Inf en pc')
 plt.errorbar(logSize,logDens,yerr=logDisp,fmt='*')
 plt.show()
 #'''
+
 #Funcion f(z). Pantallazo general. Corridas para 20 puntos entre 0 y 1 de ns. La idea es graficar ns(p)/ns(pc) usando ns(pc) ya calculado
 #en 1d)
 probas=['0.05000','0.10000','0.15000','0.20000','0.25000','0.30000','0.35000','0.40000','0.45000','0.50000','0.55000',
@@ -429,14 +461,16 @@ for i in range(len(probas)):
 		datafzeta[key][1].append(float(inter[1]))
 
 #Fijo un s y veo su ns para los distintos p
-fragMin=10
-fragMax=60
+fragMin=60
+fragMax=65
 nros=[]
+prs=[]
 for j in pc64[0]:
 	if j<fragMax and j>fragMin:
 		nros.append(j)
 
 for nro in nros: 
+	prs=[]
 	sigma=36.0/91
 	eseSigma=nro**sigma
 	zeta=np.zeros(20)
@@ -453,27 +487,30 @@ for nro in nros:
 	#Lleno el vector con los tamanos de los clusters para las diferentes probas
 	for j in range(len(probas)):
 		key=probas[j]
+		prs.append(float(probas[j]))
 		for i in range(len(datafzeta[key][0])):
 			if datafzeta[key][0][i]==nro:
 				nsp[j]=datafzeta[key][1][i]/nspc
 	plt.plot(zeta,np.log(nsp),'o')
-plt.xlabel('Epsilon')
+plt.xlabel('zeta')
 plt.ylabel('log ns(p)/ns(pc)')
 plt.show()
 #Busqueda del pmax. Grafico ns(p) con s fijo y busco su maximo. Luego grafico pmax - pc en funcion de s. Todo en log
-fragMin=0
-fragMax=200
+fragMin=10
+fragMax=60
 nros=[]
-prs=[]
+
 maximos=[]
 for j in pc64[0]:
 	if j<fragMax and j>fragMin:
 		nros.append(j)
 
+prs=[]
 for i in range(len(probas)):
 	prs.append(float(probas[i]))
 
 for nro in nros: 
+	
 	nsp=np.zeros(20)
 	#Lleno el vector con los tamanos de los clusters para las diferentes probas
 	for j in range(len(probas)):
@@ -481,8 +518,8 @@ for nro in nros:
 		for i in range(len(datafzeta[key][0])):
 			if datafzeta[key][0][i]==nro:
 				nsp[j]=datafzeta[key][1][i]
-	
-	maximos.append(np.log(np.max(nsp)-pcritica64))
+	argmax=np.argmax(nsp)
+	maximos.append(np.log(np.abs(prs[argmax]-pcritica64)))
 		
 nrosLog=[]
 for n in nros:
@@ -491,15 +528,68 @@ for n in nros:
 xdata=nrosLog
 ydata=maximos
 popt, pcov=curve_fit(lineal,xdata,ydata)
-xfit=np.linspace(0,xdata[len(xdata)-1],100)
+xfit=np.linspace(xdata[0],xdata[len(xdata)-1],100)
 yfit=popt[0]*xfit+popt[1]
 perr = np.sqrt(np.diag(pcov))
 print("Sigma: "+str(popt[0])+" err: "+str(perr[0]))
 plt.plot(xfit,yfit)
+
 plt.plot(nrosLog,maximos,'o')
+
 plt.xlabel('log Tamano cluster')
 plt.ylabel('log p max - pc (L)')
 plt.show()
+#'''
+
+
+#Gamma matching. Pantallazo general. Corridas para 20 puntos entre 0.58 y 0.6 de ns con tamano de red de 128. La idea es graficar Suma de ns(p)s^2 siendo el segundo momento de la distribucion
+#en 1d)
+probas=['0.5800','0.5810','0.5820','0.5830','0.5840','0.5850','0.5860','0.5870','0.5880','0.5890','0.5900',
+		'0.5910','0.5920','0.5930','0.5940','0.5950','0.5960','0.5970','0.5980','0.6000']
+
+script_dir = os.path.dirname(__file__) #<-- Directorio absoluto donde estan los resultados
+
+pcritica128=0.592557
+
+m2=[]
+prs=[]
+for i in probas:
+	rel_path = "Resultados/gammamatch/proba_"+i+".txt"
+	direc = os.path.join(script_dir, rel_path)
+	f = open(direc, 'r')
+	next(f) #Salteo header
+	s=0
+	ns=0	
+	elem2=0
+	for line in f:
+		inter = [x for x in line.split('\t\t')]
+		s=float(inter[0])
+		ns=float(inter[1])
+		elem2=elem2+ns*s*s
+
+	m2.append(elem2)
+	prs.append(float(i) - pcritica128)
+
+plt.xlabel('Probabilidad de llenado - pc')
+plt.ylabel('M2')
+plt.plot(prs,m2,'o')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
