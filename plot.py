@@ -6,6 +6,9 @@ from scipy.optimize import curve_fit
 def lineal(x, m, b):
 	return m*x+b
 
+def beta(x,a,b,c):
+	return a*(x**b)+c
+
 
 #Pcritica. Calculo de pcritica para distintos tamanos de red. Cada punto tiene 27000 realizaciones y cada realizacion
 #se obtiene con 16 divisiones sucesivas del valor de pcritica.
@@ -17,6 +20,31 @@ plt.plot(disp,pcrit,'o')
 plt.show()
 #'''
 '''
+plt.xlabel('Largo de la red')
+plt.ylabel('Probabilidad critica')
+plt.errorbar(redsize,pcrit,yerr=disp,fmt='*')
+plt.show()
+#'''
+'''
+#Con mas valores
+redsize=[4,8,16,24,28,32,40,48,64,80,96,112,128,256]
+pcrit=[0.562863,0.579404,0.587758,0.591330,0.591703,0.593926,0.592752,0.592809,0.592517,0.592630,0.592574,0.592486,0.592557,0.592741]
+disp=[0.103579,0.070450,0.044650,0.034066,0.029225,0.027715,0.023418,0.020701,0.014367,0.016976,0.012398,0.010855,0.009640,0.005410]
+xdata=disp[6:]
+ydata=pcrit[6:]
+
+popt, pcov = curve_fit(lineal, xdata, ydata)
+perr = np.sqrt(np.diag(pcov))
+xfit=np.linspace(0,xdata[0],100)
+yfit=popt[0]*xfit+popt[1]
+print(popt[1])
+print(perr[1])
+plt.plot(xfit,yfit)
+
+plt.xlabel('Dispersion')
+plt.ylabel('Probabilidad critica')
+plt.plot(disp,pcrit,'o')
+plt.show()
 plt.xlabel('Largo de la red')
 plt.ylabel('Probabilidad critica')
 plt.errorbar(redsize,pcrit,yerr=disp,fmt='*')
@@ -108,7 +136,7 @@ plt.plot(probasFinas,t_fino_64,'*')
 plt.plot(probasFinas,t_fino_128,'*')
 plt.show()
 '''
-#Numero de fragmentos en funcion del tamano del cluster ns(s). Uso la pcritica del barrido fino por divisiones.
+#Numero de fragmentos en funcion del tamano del cluster ns(s) en el punto critico. Uso la pcritica del barrido fino por divisiones.
 #27000 redes analizadas
 
 #pcrit_4=0.562863
@@ -146,17 +174,23 @@ for i in [4,16,32,64,128]:
 	datalog[key][1]=np.asarray(datalog[key][1])
 
 f.close()
-boundsx=[1.2,3.7,5,6.1,6.8]
-boundsy=[8.3,6.3,4.8,3.9,3.6]
-tamas=[4,16,32,64,128]
+#boundsx=[1.2,3.7,5,6.1,6.8]
+#boundsy=[8.3,6.3,4.8,3.9,3.6]
+#tamas=[4,16,32,64,128]
+
+tamas=[16,32,64,128]
+boundsx=[3.7,5,6.1,6.8]
+boundsy=[6.3,4.8,3.9,3.6]
+
 for i in range(len(tamas)):
 	key='tam_'+str(tamas[i])	
 	#Fiteo lineal y plot
 	xdata=datalog[key][0]
 	xdata=xdata[xdata<boundsx[i]] #Solo la parte lineal	
 	largo=len(xdata)
+	xdata=xdata[8:]
 	ydata=datalog[key][1]
-	ydata=ydata[0:largo]	
+	ydata=ydata[8:largo]	
 	popt, pcov = curve_fit(lineal, xdata, ydata)
 	perr = np.sqrt(np.diag(pcov))
 	xfit=np.linspace(0,boundsx[i],100)
@@ -171,7 +205,7 @@ plt.xlabel('Log Tamanos de cluster')
 plt.ylabel('Log Ocurrencias')
 
 plt.show()
-'''
+#'''
 
 #Curva P inf. 50 puntos equiespaciados 27000 iteraciones por cada punto de la curva contando la masa	
 #del cluster percolante.
@@ -214,7 +248,7 @@ pInf_128=[0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.00000
 
 
 
-
+'''
 plt.xlabel('Probabilidad de llenado')
 plt.ylabel('P infinito')
 plt.plot(probas,pInf_4,'o')
@@ -224,6 +258,7 @@ plt.plot(probas,pInf_64,'o')
 plt.plot(probas,pInf_128,'o')
 plt.show()
 #'''
+
 #Detalle de curva Pinf. 50 puntos para poder ajustar y obtener beta
 # Distintos detalles para cada tamano:
 # 4   [0.1,0.5]
@@ -231,15 +266,20 @@ plt.show()
 # 32  [0.4, 0.7]
 # 64  [0.45, 0.7]
 # 128 [0.45, 0.7]
-
-
+# 256 [0.5, 0.7]
+'''
 dataPinf={}
+dataPinfLog={}
 script_dir = os.path.dirname(__file__) #<-- Directorio absoluto donde estan los resultados
+pcrits = [0.562863,0.587758,0.594091,0.592630,0.592557,0.592741]
 
-for i in [4,16,32,64]:#,64,128]:
+n=0 #Grafico respecto de su Pcritica
+
+for i in [4,16,32,64,128,256]:
 
 	key='pInf_'+str(i)
 	dataPinf[key]=[[],[]] #Una para tamanos y otra para ns
+	dataPinfLog[key]=[[],[]]
 
 	rel_path = "Resultados/pinf/tam_"+str(i)+".txt"
 	direc = os.path.join(script_dir, rel_path)
@@ -247,45 +287,60 @@ for i in [4,16,32,64]:#,64,128]:
 	next(f) #Salteo header
 	for line in f:
 		inter = [x for x in line.split('\t\t')]
-		dataPinf[key][0].append(float(inter[0]))
-		dataPinf[key][1].append(float(inter[1]))	
+		dataPinf[key][0].append(float(inter[0])- pcrits[n])
+		dataPinf[key][1].append(float(inter[1]))
+
+
+		dataPinfLog[key][0].append(np.log(float(inter[0]) - pcrits[n]))
+		dataPinfLog[key][1].append(np.log(float(inter[1])))	
 
 	dataPinf[key][0]=np.asarray(dataPinf[key][0])
 	dataPinf[key][1]=np.asarray(dataPinf[key][1])
+
+	
+	dataPinfLog[key][0]=np.asarray(dataPinfLog[key][0])
+	dataPinfLog[key][1]=np.asarray(dataPinfLog[key][1])
+	
+	plt.figure(1)
+	plt.subplot(211)
 	plt.plot(dataPinf[key][0],dataPinf[key][1],'o')
+	plt.subplot(212)
+	plt.plot(dataPinfLog[key][0],dataPinfLog[key][1],'o')
+
+	n=n+1
 
 f.close()
-plt.xlabel('Probabilidad de llenado')
+
+plt.figure(1)
+plt.subplot(211)
+plt.xlabel('Probabilidad de llenado - Pc')
 plt.ylabel('P infinito')
+plt.subplot(212)
+plt.xlabel('log Probabilidad de llenado - Pc')
+plt.ylabel('log P infinito')
 plt.show()
-'''
-boundsx=[1.2,3.7,5,6.1,6.8]
-boundsy=[8.3,6.3,4.8,3.9,3.6]
-tamas=[4,16,32,64,128]
-for i in range(len(tamas)):
-	key='tam_'+str(tamas[i])	
-	#Fiteo lineal y plot
-	xdata=datalog[key][0]
-	xdata=xdata[xdata<boundsx[i]] #Solo la parte lineal	
-	largo=len(xdata)
-	ydata=datalog[key][1]
-	ydata=ydata[0:largo]	
+#Detalle fino de Pinf para hacer el ajuste lineal de beta en el grafico logaritmico. Me quedo con log(p)>-0.43
+for i in [4,16,32,64,128,256]:
+	key='pInf_'+str(i)
+	xdata=[]
+	ydata=[]
+	for j in range(len(dataPinfLog[key][0])):
+		if dataPinfLog[key][0][j]>-2.8:
+			xdata.append(dataPinfLog[key][0][j])
+			ydata.append(dataPinfLog[key][1][j])
 	popt, pcov = curve_fit(lineal, xdata, ydata)
 	perr = np.sqrt(np.diag(pcov))
-	xfit=np.linspace(0,boundsx[i],100)
+	print("Tamano: "+str(i)+" Beta: "+str(popt[0])+" err: "+str(perr[0]))
+	xfit=np.linspace(xdata[0],xdata[len(xdata)-1],100)
 	yfit=popt[0]*xfit+popt[1]
-	plt.plot(datalog[key][0],datalog[key][1],'o')
+	plt.xlabel('log Probabilidad de llenado')
+	plt.ylabel('log P infinito')
+	plt.plot(xdata,ydata,'o')
 	plt.plot(xfit,yfit)
-	print('Tam: '+str(tamas[i])+' Pend: '+str(popt[0])+' err: '+str(perr[0]))
-	
-	
 
-plt.xlabel('Log Tamanos de cluster')
-plt.ylabel('Log Ocurrencias')
 
 plt.show()
-'''
-
+#'''
 
 
 
@@ -300,6 +355,15 @@ dispDensidad=[]
 for i in range(len(masasInf)):
 	densidadInf.append(masasInf[i]/(redsize[i]**2))
 	dispDensidad.append(disp[i]/(redsize[i]**2))#Esta bien propagado el error?
+
+logDens=[]
+logSize=[]
+logDisp=[]
+
+for i in range(len(redsize)):
+	logDens.append(np.log(densidadInf[i]))
+	logSize.append(np.log(redsize[i]))	
+	logDisp.append(np.log(dispDensidad[i]))
 '''
 plt.xlabel('Largo de la red')
 plt.ylabel('Masa del cluster Inf en pc')
@@ -312,17 +376,130 @@ plt.ylabel('Densidad del cluster Inf en pc')
 plt.errorbar(redsize,densidadInf,yerr=dispDensidad,fmt='*')
 plt.show()
 #'''
+'''
+xdata=logSize
+ydata=logDens
+popt, pcov = curve_fit(lineal, xdata, ydata,sigma=logDisp)
+perr = np.sqrt(np.diag(pcov))
+xfit=np.linspace(xdata[0],xdata[len(xdata)-1],100)
+yfit=popt[0]*xfit+popt[1]
+print(popt[0]+2) # Ya que es D-d
+print(popt)
+print(perr)
+plt.plot(xfit,yfit)
 
 
+plt.xlabel('log Largo de la red')
+plt.ylabel('log Densidad del cluster Inf en pc')
+plt.errorbar(logSize,logDens,yerr=logDisp,fmt='*')
+plt.show()
+#'''
+#Funcion f(z). Pantallazo general. Corridas para 20 puntos entre 0 y 1 de ns. La idea es graficar ns(p)/ns(pc) usando ns(pc) ya calculado
+#en 1d)
+probas=['0.05000','0.10000','0.15000','0.20000','0.25000','0.30000','0.35000','0.40000','0.45000','0.50000','0.55000',
+		'0.60000','0.65000','0.70000','0.75000','0.80000','0.85000','0.90000','0.95000','1.00000']
+
+script_dir = os.path.dirname(__file__) #<-- Directorio absoluto donde estan los resultados
+
+pcritica64=0.592630
+
+pc64=[[],[]] #ns del pcritico que ya calcule
+rel_path = "Resultados/ns/tam_64.txt"
+direc = os.path.join(script_dir, rel_path)
+f = open(direc, 'r')
+next(f) #Salteo header
+for line in f:
+	inter = [x for x in line.split('\t\t')]
+	pc64[0].append(float(inter[0]))
+	pc64[1].append(float(inter[1]))
+#plt.plot(pc64[0],pc64[1],'*')
 
 
+datafzeta={}
+for i in range(len(probas)):
+	key=probas[i]
+	datafzeta[key]=[[],[]] #Una para tamanos y otra para ns
+	rel_path = "Resultados/efezeta/proba_"+probas[i]+".txt"
+	direc = os.path.join(script_dir, rel_path)
+	f = open(direc, 'r')
+	next(f) #Salteo header
+	for line in f:
+		inter = [x for x in line.split('\t\t')]
+		datafzeta[key][0].append(float(inter[0]))
+		datafzeta[key][1].append(float(inter[1]))
 
+#Fijo un s y veo su ns para los distintos p
+fragMin=10
+fragMax=60
+nros=[]
+for j in pc64[0]:
+	if j<fragMax and j>fragMin:
+		nros.append(j)
 
+for nro in nros: 
+	sigma=36.0/91
+	eseSigma=nro**sigma
+	zeta=np.zeros(20)
+	for i in range(len(probas)):
+		pr=float(probas[i])
+		zeta[i]=(eseSigma*(pr-pcritica64))/pcritica64
 
+	nspc=0 #Lo busco
+	for i in range(len(pc64[0])):
+		if pc64[0][i]==nro:
+			nspc=pc64[1][i]
 
+	nsp=np.zeros(20)
+	#Lleno el vector con los tamanos de los clusters para las diferentes probas
+	for j in range(len(probas)):
+		key=probas[j]
+		for i in range(len(datafzeta[key][0])):
+			if datafzeta[key][0][i]==nro:
+				nsp[j]=datafzeta[key][1][i]/nspc
+	plt.plot(zeta,np.log(nsp),'o')
+plt.xlabel('Epsilon')
+plt.ylabel('log ns(p)/ns(pc)')
+plt.show()
+#Busqueda del pmax. Grafico ns(p) con s fijo y busco su maximo. Luego grafico pmax - pc en funcion de s. Todo en log
+fragMin=0
+fragMax=200
+nros=[]
+prs=[]
+maximos=[]
+for j in pc64[0]:
+	if j<fragMax and j>fragMin:
+		nros.append(j)
 
+for i in range(len(probas)):
+	prs.append(float(probas[i]))
 
+for nro in nros: 
+	nsp=np.zeros(20)
+	#Lleno el vector con los tamanos de los clusters para las diferentes probas
+	for j in range(len(probas)):
+		key=probas[j]
+		for i in range(len(datafzeta[key][0])):
+			if datafzeta[key][0][i]==nro:
+				nsp[j]=datafzeta[key][1][i]
+	
+	maximos.append(np.log(np.max(nsp)-pcritica64))
+		
+nrosLog=[]
+for n in nros:
+	nrosLog.append(np.log(n))
 
+xdata=nrosLog
+ydata=maximos
+popt, pcov=curve_fit(lineal,xdata,ydata)
+xfit=np.linspace(0,xdata[len(xdata)-1],100)
+yfit=popt[0]*xfit+popt[1]
+perr = np.sqrt(np.diag(pcov))
+print("Sigma: "+str(popt[0])+" err: "+str(perr[0]))
+plt.plot(xfit,yfit)
+plt.plot(nrosLog,maximos,'o')
+plt.xlabel('log Tamano cluster')
+plt.ylabel('log p max - pc (L)')
+plt.show()
 
 
 

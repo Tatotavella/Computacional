@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <string.h>
 
 
 void llenar(int *red, int m, int n, float proba);
@@ -51,7 +52,7 @@ int main(int argc, char *argv[]){
 	}
 */
 //---------------------------------------------------------------------
-/*  
+/*
 	//Calculo de pcritica
 	int itera=27000;
 	int divisiones=16;	
@@ -65,7 +66,7 @@ int main(int argc, char *argv[]){
 	curvafp(red,m,n,itera,puntos);
 //*/
 //--------------------------------------------------------------------------	
-
+/*
 	//P infinito
 	int itera=27000;
 	int puntos=50;
@@ -83,7 +84,7 @@ int main(int argc, char *argv[]){
 	masaInf=fractDim(red,m,n,itera,proba);
 //*/
 
-/*
+
 	//Tamaño de los clusters
 	int i,k;
 	float pcrit_4=0.562863;
@@ -107,8 +108,8 @@ int main(int argc, char *argv[]){
 
 	srand((unsigned int)time(NULL));
     for(i=0;i<itera;i++){
-		if(i%1000==0){printf("%d\n",i);}
-		llenar(red,m,n,pcrit_64); //Cambiar pcrit ACA para correr otro tamaño
+		//if(i%1000==0){printf("%d\n",i);}
+		llenar(red,m,n,proba); //Cambiar pcrit ACA para correr otro tamaño
 		hoshen(red,m,n);
 
 		contador_clases(red,contClase,m,n);      //Cuento tamaño de cada etiqueta
@@ -121,9 +122,16 @@ int main(int argc, char *argv[]){
 
 		
 	}
+	char str[100];
+	strcpy(str, "Resultados/efezeta/proba_");
+	char cpi[50];
+	sprintf(cpi,"%.5f",proba);
+	printf("%s\n",cpi);
+	strcat(str, cpi);
+	strcat(str, ".txt");
 
 	//Escribo en archivo dos columnas |Tamaños|Cantidades|
-	FILE *fp = fopen("Resultados/ns/tam_64.txt","w");
+	FILE *fp = fopen(str,"w");
 	fprintf(fp,"Tamaños\t\tCantidades\n");
 	for(k=0;k<m*n;k++){ 
 		if(tamanos[k]>0){
@@ -439,16 +447,17 @@ float pcritica(int *red,int m, int n,int itera,int divisiones){
 			}	
 		}
 		valoresPcrit[i]=pcrit;
+		/*
 		if(i%1000==0){
 			printf("pcrit: %f,paso:%d\n",pcrit,i);
 		}
+		*/
 	}
 	pcrit=promedio(valoresPcrit,itera);
 	float disp;
 	disp=dispersion(valoresPcrit,itera);
 	printf("Valor de pcritica: %f, Dispersion: %f\n",pcrit,disp);
 	free(valoresPcrit);
-
 
 	return pcrit;
 }
@@ -504,13 +513,13 @@ void curvaPinf(int *red,int m,int n,int itera,int puntos){
 		*(contClase+k)=0;
 	}
 
-	FILE *fp = fopen("Resultados/pinf/tam_128.txt","w"); //FALTA CORRER 128
+	FILE *fp = fopen("Resultados/pinf/tam_256.txt","w"); //FALTA CORRER 128
 	fprintf(fp,"Proba\t\tPinf\n");
 	
 	for(i=0;i<puntos;i++){
 		srand(time(NULL)+i);//Cada punto con una sola tira de numeros aleatorios?
 		masaParcial=0;
-		probabilidad=0.45+(0.7-0.45)*(i/(float)puntos); //Detalle fino
+		probabilidad=0.5+(0.7-0.5)*(i/(float)puntos); //Detalle fino
 		//probabilidad=i/(float)puntos; Toda la curva
 		for(j=0;j<itera;j++){
 			llenar(red,m,n,probabilidad);
