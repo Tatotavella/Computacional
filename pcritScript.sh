@@ -1,6 +1,6 @@
 #!/bin/bash
-for i in 28 40 80 112
+for i in 4 8 16 24 28 32 40 48 64 80 96 112 128 256
 do
-	./clase1.e $i $i 0
+	./pcritica.e $i
 	echo $i 
 done
