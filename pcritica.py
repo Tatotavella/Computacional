@@ -63,7 +63,7 @@ popt, pcov = curve_fit(lineal, xdata, ydata,sigma=yerrs)
 perr = np.sqrt(np.diag(pcov))
 xfit=np.linspace(xdata[0],xdata[len(xdata)-1],100)
 yfit=popt[0]*xfit+popt[1]
-print("Pendiente: "+str(popt[0])+" err: "+str(perr[0]))
+print("Pendiente, 1/nu: "+str(popt[0])+" err: "+str(perr[0]))
 print("Ordenada: "+str(popt[1])+" err: "+str(perr[1]))
 plt.plot(xfit,yfit)
 
