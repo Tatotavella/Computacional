@@ -1,2 +1,0 @@
-Tamaños		Cantidades
-4095		1

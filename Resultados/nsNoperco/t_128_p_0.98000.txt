@@ -1,3 +1,0 @@
-Tamaños		Cantidades
-1		195
-2		5

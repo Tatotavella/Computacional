@@ -1,5 +1,0 @@
-Tamaños		Cantidades
-1		194
-2		10
-3		7
-4		3

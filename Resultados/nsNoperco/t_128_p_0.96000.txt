@@ -1,5 +1,0 @@
-Tamaños		Cantidades
-1		2046
-2		51
-3		12
-4		3
