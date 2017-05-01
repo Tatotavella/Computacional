@@ -12,7 +12,7 @@ en la compilacion se genero con "gcc -o3 -Wall -o percolar.o -c percolar.c"
 
 -------------------------------------------------
 Punto 1 
--------------------------------------------------
+
 Se utilizaron los programas pcritica.e y curvafp.e
 
 Calculo de pcritica punto 1a "gcc -o3 -Wall percolar.o pcritica.c -o pcritica.e -lm". Solo es necesario el tamaño 
@@ -26,14 +26,14 @@ y mas puntos adentro del archivo curvafp.c.
 Los resultados se visualizan con curvafp.py
 -------------------------------------------------
 Punto 2
--------------------------------------------------
+
 "gcc -o3 -Wall percolar.o curvapinf.c -o curvapinf.e -lm"
 curvapinfScript.sh para las distintas corridas 
 Resultados/pinf/curva_TAMAÑO.txt. Pantallazo general
 Visualizacion curvapinf.py
 -------------------------------------------------
 Punto 3 
--------------------------------------------------
+
 hay que ingresar la proba
 "gcc -o3 -Wall percolar.o fractDim.c -o fractDim.e -lm"
 
@@ -42,7 +42,7 @@ Se corre con fractDimScript.sh que tiene tamaños y probabilidades de corrida pa
 Visualizacion y valor con fractDim.py
 ---------------------------------------------------
 Punto 4, 5 y 1d 
----------------------------------------------------
+
 Se utilizó nsfrag.e con distintos scripts. Se cuenta la cantidad de ocurrencias de cada tamaño de cluster.
 En Resultados se escriben como "t_TAMAÑO_p_PROBABILIDAD.txt" 
 
@@ -53,7 +53,7 @@ Para el 4 se corre con distintas probabilidades y un tamaño fijo. Siempre se us
 tamaño y proba. scalingScript.sh
 ---------------------------------------------------
 Punto 6 
----------------------------------------------------
+
 Es como nsfrag pero sin considerar el percolante
 
 "gcc -o3 -Wall percolar.o nsNoperco.c -o nsNoperco.e -lm"
