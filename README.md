@@ -8,7 +8,8 @@ implementados los métodos llenar, hoshen, actualizar, etiqueta_falsa, corregir_
 Para el resto del trabajo se utilizó la libreria percolar que contiene todas las funciones utilizadas como
 llenar, hoshen, actualizar, etiqueta_falsa, corregir_etiqueta, percola, imprimir, contador_clases, 
 contador_tamanos, promedio, dispersion, pcritica, curvafp, curvaPinf y fractDim. El object file para incluir
-en la compilacion se genero con "gcc -o3 -Wall -o percolar.o -c percolar.c"
+en la compilacion se genero con "gcc -o3 -Wall -o percolar.o -c percolar.c". El número de iteraciones utilizado
+a lo largo del trabajo fue de 27000.
 
 ----------------------------------------------------------------------
 Punto 1 
